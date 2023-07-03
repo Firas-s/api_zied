@@ -1,16 +1,32 @@
-# This is a sample Python script.
+from flask import Flask, request, jsonify
+import mysql.connector
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+app = Flask(__name__)
 
+# Configuration de la connexion à la base de données MySQL
+db = mysql.connector.connect(
+    host="127.0.0.1",
+    user="root",
+    password="",
+    database="client"
+)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# Route pour la vérification de l'utilisateur
+@app.route('/check_user', methods=['POST'])
+def check_user():
+    data = request.get_json()
+    name = data.get('name')
+    email = data.get('email')
 
+    # Exécution de la requête SQL pour vérifier si l'utilisateur existe dans la base de données
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM Users WHERE name=%s AND email=%s", (name, email))
+    row = cursor.fetchone()
 
-# Press the green button in the gutter to run the script.
+    if row is None:
+        return jsonify({'message': 'Utilisateur non trouvé'})
+    else:
+        return jsonify({'message': 'Utilisateur trouvé'})
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    app.run(debug=True)
